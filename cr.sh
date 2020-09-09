@@ -197,16 +197,9 @@ lookup_changed_charts() {
     local commit="$1"
 
     local changed_files
-    changed_files=$(git diff --find-renames --name-only "$commit" -- "$charts_dir")
+    mapfile -t changed_files < <(git diff --find-renames --name-only "$commit" -- "$charts_dir")
 
-    local fields
-    if [[ "$charts_dir" == '.' ]]; then
-        fields='1'
-    else
-        fields='1,2'
-    fi
-
-    cut -d '/' -f "$fields" <<< "$changed_files" | uniq | filter_charts
+    echo "${changed_files[@]}" | xargs -L1 dirname | sort | uniq | filter_charts
 }
 
 package_chart() {
