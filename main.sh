@@ -35,6 +35,10 @@ main() {
         args+=(--charts-repo-url "${INPUT_CHARTS_REPO_URL}")
     fi
 
+    if [[ -n "${INPUT_LEVEL:-}" ]]; then
+        args+=(--level "${INPUT_LEVEL}")
+    fi
+
     "$SCRIPT_DIR/cr.sh" "${args[@]}"
 }
 

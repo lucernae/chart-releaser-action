@@ -29,6 +29,7 @@ Usage: $(basename "$0") <options>
     -h, --help               Display help
     -v, --version            The chart-releaser version to use (default: v1.0.0)"
     -d, --charts-dir         The charts directory (defaut: charts)
+    -l, --level              The level of the subdir from --charts-dir to reach directory where Chart.yaml file is located (default: 2)
     -u, --charts-repo-url    The GitHub Pages URL to the charts repo (default: https://<owner>.github.io/<repo>)
     -o, --owner              The repo owner
     -r, --repo               The repo name
@@ -38,6 +39,7 @@ EOF
 main() {
     local version="$DEFAULT_CHART_RELEASER_VERSION"
     local charts_dir=charts
+    local level=2
     local owner=
     local repo=
     local charts_repo_url=
@@ -108,6 +110,12 @@ parse_command_line() {
                     echo "ERROR: '-d|--charts-dir' cannot be empty." >&2
                     show_help
                     exit 1
+                fi
+                ;;
+            -l|--level)
+                if [[ -n "${2:-}" ]]; then
+                    level="$2"
+                    shift
                 fi
                 ;;
             -u|--charts-repo-url)
@@ -199,7 +207,11 @@ lookup_changed_charts() {
     local changed_files
     mapfile -t changed_files < <(git diff --find-renames --name-only "$commit" -- "$charts_dir")
 
-    echo "${changed_files[@]}" | xargs -L1 dirname | sort | uniq | filter_charts
+    if [[ "$charts_dir" == '.' ]]; then
+        level=1
+    fi
+
+    echo "${changed_files[@]}" | xargs -L1 dirname | cut -d '/' -f "1-$level" | sort | uniq | filter_charts
 }
 
 package_chart() {
