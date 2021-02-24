@@ -48,7 +48,9 @@ main() {
 
     parse_command_line "$@"
 
-    echo "$repo"
+    echo "Level: $level"
+    echo "Force: $force"
+    echo "Repo: $repo"
     local repo_root
     repo_root=$(git rev-parse --show-toplevel)
     pushd "$repo_root" > /dev/null
@@ -106,7 +108,6 @@ parse_command_line() {
                 ;;
             -f|--force)
                 force=1
-                shift
                 ;;
             -d|--charts-dir)
                 if [[ -n "${2:-}" ]]; then
