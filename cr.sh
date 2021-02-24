@@ -28,6 +28,7 @@ Usage: $(basename "$0") <options>
 
     -h, --help               Display help
     -v, --version            The chart-releaser version to use (default: v1.0.0)"
+    -f, --force              Force release creations default false
     -d, --charts-dir         The charts directory (defaut: charts)
     -l, --level              The level of the subdir from --charts-dir to reach directory where Chart.yaml file is located (default: 2)
     -u, --charts-repo-url    The GitHub Pages URL to the charts repo (default: https://<owner>.github.io/<repo>)
@@ -43,6 +44,7 @@ main() {
     local owner=
     local repo=
     local charts_repo_url=
+    local force=
 
     parse_command_line "$@"
 
@@ -101,6 +103,10 @@ parse_command_line() {
                     show_help
                     exit 1
                 fi
+                ;;
+            -f|--force)
+                force=1
+                shift
                 ;;
             -d|--charts-dir)
                 if [[ -n "${2:-}" ]]; then
@@ -176,7 +182,7 @@ parse_command_line() {
 install_chart_releaser() {
     echo "Installing chart-releaser..."
 
-    curl -sSLo cr.tar.gz "https://github.com/helm/chart-releaser/releases/download/$version/chart-releaser_${version#v}_linux_amd64.tar.gz"
+    curl -sSLo cr.tar.gz "https://github.com/lucernae/chart-releaser/releases/download/$version/chart-releaser_${version#v}_linux_amd64.tar.gz"
     tar -xzf cr.tar.gz
     sudo mv cr /usr/local/bin/cr
 }
@@ -223,7 +229,11 @@ package_chart() {
 
 release_charts() {
     echo 'Releasing charts...'
-    cr upload -o "$owner" -r "$repo"
+    if [[ -z "$force" ]]; then
+        cr upload -o "$owner" -r "$repo"
+    else
+        cr upload -o "$owner" -r "$repo" --force
+    fi
 }
 
 update_index() {
